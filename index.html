@@ -186,7 +186,7 @@
     <div class="card">
       <div class="stats">
         <div><b id="st-sets">0</b><span>今日の15分</span></div>
-        <div><b id="st-streak">0</b><span>れんぞく日数🔥</span></div>
+        <div><b id="st-streak">0</b><span>やった日🌱</span></div>
         <div><b id="st-ok">0</b><span>できた問題</span></div>
       </div>
     </div>
@@ -284,7 +284,7 @@
 <div class="modal hidden" id="m-park" onclick="if(event.target===this)closeM('m-park')">
   <div class="sheet">
     <h3>🅿️ やりたいこと駐車場</h3>
-    <p class="muted" style="margin-bottom:10px">「推し見たい」「あれ調べたい」が浮かんだら、ここに置いておこう。<b>休憩のときに必ずできるよ</b>。</p>
+    <p class="muted" style="margin-bottom:10px">「推し見たい」「あれ調べたい」が浮かんだら、ここに置いておこう。<b>休憩のときに、ここを見ればすぐ思い出せるよ</b>。</p>
     <div class="row"><input id="park-in" maxlength="40" placeholder="浮かんだこと"><button class="btn btn-primary" style="flex:0 0 80px;padding:10px" onclick="addPark()">置く</button></div>
     <ul class="park-list" id="park-list"></ul>
     <button class="btn btn-line" style="margin-top:14px" onclick="closeM('m-park')">とじる</button>
@@ -341,7 +341,7 @@ for(const sid of SUBJ_ORDER){
 }
 const GOOD=['せいかい！','やった、あってる！','さすが♪','ナイス！','その調子！','ばっちり！','天才かも！'];
 const SOFT=['おしい！つぎいこ♪','だいじょうぶ、覚えればOK','ここ、いっしょに覚えよ','ナイスチャレンジ！','まちがえた分だけ伸びるよ♪'];
-const DONEMSG=['15分、ちゃんと向き合えたね。','ひとつ、前に進んだよ。','この積み重ねが、合格につながるよ。','始められたのが、いちばんえらい。','できた数が、自信になるよ。'];
+const DONEMSG=['15分、ちゃんと向き合えたね。','ひとつ、前に進んだよ。','この積み重ねは、ちゃんと残ってるよ。','始められたのが、いちばんえらい。','できた数が、自信になるよ。'];
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 const $=id=>document.getElementById(id);
@@ -356,7 +356,7 @@ function load(){
   let s=null;try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
   const def={audio:true,studyMin:15,breakMin:5,nightHour:22,dream:'美容の道へ進む',letter:'',
     day:'',tasks:[],battery:null,lowMode:null,sets:0,nightOK:'',
-    streak:0,last:'',dreamPts:0,ok:{},wrong:{},parking:[],phase:null};
+    streak:0,days:0,last:'',dreamPts:0,ok:{},wrong:{},parking:[],phase:null};
   return Object.assign(def,s||{});
 }
 let S=load();
@@ -458,7 +458,7 @@ function poolFor(task){
 let uid=0;const newId=()=>Date.now().toString(36)+(uid++);
 function quizTask(sid){const u=nextUnit(sid);return {id:newId(),type:'quiz',subj:sid,unit:u.id,label:BANK[sid].name+'クイズ「'+u.name+'」',hint:'4択・15分'};}
 function recommend(){
-  const r=[{id:newId(),type:'free',label:'学校ワーク（テスト範囲）',hint:'内申アップにいちばん効く！提出物にもなるよ'}];
+  const r=[{id:newId(),type:'free',label:'学校ワーク（テスト範囲）',hint:'提出物にもなるから、やった分がそのまま形に残るよ'}];
   const weak=SUBJ_ORDER.slice().sort((a,b)=>subjRatio(a)-subjRatio(b))[0];
   const t1=quizTask(weak);t1.hint='まだ伸びしろが大きい教科';r.push(t1);
   if(ALLQ.filter(q=>S.wrong[q.qid]).length>=5)r.push({id:newId(),type:'review',label:'にがてリベンジ',hint:'前にまちがえた問題だけ。正解で消えるよ'});
@@ -514,7 +514,7 @@ function renderHome(){
     const list=S.tasks.map(t=>`<li class="${t.done?'done':(c&&t.id===c.id?'now':'')}"><span class="chk">${t.done?'✓':''}</span>${esc(t.label)}</li>`).join('');
     if(c){
       m.innerHTML=`<div class="hero"><div class="label">今日の1個</div><h2>${esc(c.label)}</h2>
-        <div class="sub">${S.studyMin}分だけ。最初の1問は、ぜったい解けるやつから。</div>
+        <div class="sub">${S.studyMin}分だけ。最初の1問は、かんたんなやつから。</div>
         <button class="btn" onclick="startStudy('${c.id}')">▶ ${S.studyMin}分スタート</button></div>
         <div class="card"><div class="label">今日のやること（選んだ順）</div><ul class="tasks">${list}</ul>
         <button class="btn btn-line" style="margin-top:10px" onclick="openPick()">やることを変える</button></div>`;
@@ -531,7 +531,7 @@ function renderHome(){
   $('dream-sub').textContent='次のレベルまで あと'+(50-S.dreamPts%50)+'pt（正解1問=1pt・15分=5pt）';
   $('dream-letter').classList.toggle('hidden',!S.letter);
   $('dream-letter').textContent=S.letter?'💌 未来のわたしより\n'+S.letter:'';
-  $('st-sets').textContent=S.sets;$('st-streak').textContent=S.streak;$('st-ok').textContent=okCount();
+  $('st-sets').textContent=S.sets;$('st-streak').textContent=S.days;$('st-ok').textContent=okCount();
   renderParkBadge();
 }
 function setBatt(b){S.battery=b;if(b!=='low')S.lowMode=null;save();renderHome();}
@@ -617,7 +617,7 @@ function showStudy(){
   if(t.type==='free'){
     $('study-body').innerHTML=`<div class="qcard center"><div class="label">いま やってること</div>
       <div class="worknote">${esc(t.label)}</div><div class="breath"></div>
-      <p class="muted">スマホは見えないところへ。<br>浮かんだことは「🅿️メモ」に置いてね。</p></div>
+      <p class="muted">スマホは見えないところに置くと、集中しやすいかも。<br>浮かんだことは「🅿️メモ」に置いてね。</p></div>
       <button class="btn btn-primary" onclick="finishStudy()">終わった！（早めでもOK）</button>`;
   }else{
     if(!queue.length){queue=[easyQ()].concat(poolFor(t));qpos=0;}
@@ -639,7 +639,7 @@ function finishStudy(){
   const p=S.phase;if(!p)return;
   S.sets++;S.dreamPts+=5;
   const t=today();
-  if(S.last!==t){S.streak=(S.last===yesterday())?S.streak+1:1;S.last=t;}
+  if(S.last!==t){S.streak=(S.last===yesterday())?S.streak+1:1;S.days=(S.days||0)+1;S.last=t;}
   const task=taskById(p.taskId);
   if(task&&task.type!=='free')task.done=true;
   S.phase={kind:'done',day:t,taskId:p.taskId,right:p.right,answered:p.answered,asked:task&&task.type==='free'?null:true};
@@ -649,7 +649,7 @@ function showDone(){
   go('done');
   const p=S.phase,task=taskById(p.taskId);
   $('done-title').textContent='できた！🍅 今日'+S.sets+'こめ';
-  $('done-sub').textContent=pick(DONEMSG)+(p.answered?'　（正解 '+p.right+' / '+p.answered+'問）':'');
+  $('done-sub').textContent=pick(DONEMSG)+(!p.answered?'':(p.right*2>=p.answered?'　（答えた問題 '+p.answered+'問・そのうち正解 '+p.right+'問）':'　（'+p.answered+'問、向き合えたね）'));
   if(p.asked===null&&task){
     $('done-ask').innerHTML=`<div class="card"><h2 style="font-size:17px">「${esc(task.label)}」は終わった？</h2>
       <div class="row" style="margin-top:10px"><button class="btn btn-primary" onclick="answerFree(true)">終わった ✓</button>
@@ -705,12 +705,12 @@ function showOk(){
     if(p.mini){
       miniLeft--;
       after.innerHTML=miniLeft>0?`<button class="btn btn-primary">もう1問 ▶</button>`:
-        `<div class="card center"><h2>2問できた！</h2><p class="muted">からっぽの日にやれたの、本当にすごい。</p></div><button class="btn btn-primary">おしまい</button>`;
+        `<div class="card center"><h2>2問、やりきった！</h2><p class="muted">からっぽの日に、ここまで来れたのが本当にすごい。</p></div><button class="btn btn-primary">おしまい</button>`;
       after.querySelector('.btn').onclick=()=>{if(miniLeft>0)showOk();else{miniLeft=0;S.phase=null;S.lowMode='rest';save();go('home');}};
       return;
     }
     const nt=taskById(p.nextId)||curTask();
-    after.innerHTML=nt?`<p class="center muted" style="margin-bottom:10px">いい感じ！このまま次の${S.studyMin}分いこう</p>
+    after.innerHTML=nt?`<p class="center muted" style="margin-bottom:10px">おかえり。次の${S.studyMin}分、いけそうならどうぞ</p>
       <button class="btn btn-primary">▶ ${S.studyMin}分スタート：${esc(nt.label)}</button>
       <button class="btn btn-line" style="margin-top:10px">今日はここまで</button>`
       :`<button class="btn btn-primary">今日はおしまい</button>`;
@@ -772,7 +772,7 @@ function quitOneMore(){
   S.phase.oneMore=true;save();closeM('m-quit');toast('OK！あと1問でおしまい');
   const nb=document.querySelector('#study-body .after .btn');if(nb){nb.textContent='おわり！🎉';nb.onclick=finishStudy;}
 }
-function quitDay(){closeM('m-quit');const p=S.phase;if(p&&p.answered>0){finishStudy();endDay();}else endDay();toast('ここまでやれたのが、えらい');}
+function quitDay(){closeM('m-quit');const p=S.phase;if(p&&p.answered>0){finishStudy();endDay();}else endDay();toast('今日はここまで。ちゃんと自分で決められたね');}
 
 /* ---------- やりたいことメモ ---------- */
 function renderParkBadge(){const n=S.parking.length;['park-badge','park-badge2'].forEach(id=>{const el=$(id);if(el)el.innerHTML=n?`<span class="badge">${n}</span>`:'';});}
@@ -782,7 +782,7 @@ function renderPark(){
     :'<li><span class="muted">まだ何もないよ</span></li>';
   renderParkBadge();
 }
-function addPark(){const v=$('park-in').value.trim();if(!v)return;S.parking.push({text:v,t:Date.now()});save();$('park-in').value='';renderPark();toast('置いておいたよ。休憩でできるからね');}
+function addPark(){const v=$('park-in').value.trim();if(!v)return;S.parking.push({text:v,t:Date.now()});save();$('park-in').value='';renderPark();toast('置いておいたよ。休憩のときに見てね');}
 function delPark(i){S.parking.splice(i,1);save();renderPark();}
 $('park-in').addEventListener('keydown',e=>{if(e.key==='Enter')addPark();});
 $('pick-free').addEventListener('keydown',e=>{if(e.key==='Enter')addFree();});
@@ -800,7 +800,7 @@ function openDousei(){
       <p><b>今までにできた問題：${ids.length}問</b><br><span class="muted">ちゆは、ちゃんとできてる。</span></p>`;
   }else{
     h=`<div class="big-emoji">🫶</div><h3>そう思っちゃうときもあるよね</h3>
-      <p class="muted" style="margin:10px 0">まだ記録がないだけだよ。<br>このアプリは、1問目は<b>ぜったい解ける問題</b>から出すから、まず1問だけやってみよ。</p>`;
+      <p class="muted" style="margin:10px 0">まだ記録がないだけだよ。<br>このアプリは、1問目は<b>かんたんな問題</b>から出すから、まず1問だけ、のぞいてみよ。</p>`;
   }
   if(S.letter)h+=`<div class="letter" style="text-align:left">💌 未来のわたしより\n${esc(S.letter)}</div>`;
   h+=`<button class="btn btn-primary" style="margin-top:14px" onclick="closeM('m-dousei')">うん</button>`;
@@ -816,7 +816,7 @@ function saveSettings(){
   S.dream=$('set-dream').value.trim();S.letter=$('set-letter').value.trim();S.studyMin=+$('set-study').value;S.breakMin=+$('set-break').value;
   S.nightHour=+$('set-night').value;S.audio=$('set-audio').value==='1';save();closeM('m-set');toast('保存したよ');renderHome();
 }
-function resetAll(){if(confirm('できた問題・夢ゲージ・れんぞく日数・メモを さいしょから にする？')){localStorage.removeItem(KEY);S=load();save();closeM('m-set');route();}}
+function resetAll(){if(confirm('できた問題・夢ゲージ・やった日・メモを さいしょから にする？')){localStorage.removeItem(KEY);S=load();save();closeM('m-set');route();}}
 function closeM(id){$(id).classList.add('hidden');}
 
 /* ---------- 起動 ---------- */
